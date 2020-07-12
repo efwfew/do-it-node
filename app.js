@@ -7,6 +7,7 @@ var app = express();
 var router = express.Router();
 var expressErrorHandler = require('express-error-handler');
 var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 //기본 포트를 app 객체에 속성으로 설정
 //process.env 객체에 PORT 속성이 있으면 그걸 사용, 없으면 3000
@@ -20,29 +21,35 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 // cookie-parser 사용
-app.use(cookieParser);
+app.use(cookieParser());
+// express-session 설정
+app.use(session({
+    secret:'my key',
+    resave:true,
+    saveUninitialized:true,
+}));
 
+// static 사용 public 경로 지정
 app.use('/public', serveStatic(path.join(__dirname, 'public')));
 
 // middle-ware
-router.route('/process/login/:name').post(function(req, res) {
-    console.log('/process/login/:name 처리');
+router.route('/process/showCookie').get(function(req, res) {
+    console.log('/process/showCookie 호출');
 
-    var paramName = req.params.name;
+    res.send(req.cookies);
+});
 
-    var paramId = req.body.id || req.query.id;
-    var paramPassword = req.body.password || req. query.password;
-    // var userAgent = req.header('User-Agent');
-    // var paramName = req.query.name;
-    // console.log(req)
-
-    res.writeHead('200', {'Content-Type':'text/html;charset=utf-8'});
-    res.write('<h1>Express server responding</h1>');
-    res.write('<div><p>Param name : ' + paramName + ' </p></div>')
-    res.write('<div><p>Param id : ' + paramId + ' </p></div>')
-    res.write('<div><p>Param password : ' + paramPassword + ' </p></div>')
-    res.write("<br><br><a href='/public/login.html'>로그인 페이지로 돌아가기</a>")
-    res.end();
+router.route('/process/setUserCookie').get(function(req, res) {
+    console.log('/process/setUserCookie 호출');
+    
+    // cookie 설정
+    res.cookie('user', {
+        id: 'mike',
+        name:'소녀시대',
+        authorized: true
+    });
+    //redirect
+    res.redirect('/process/showCookie');
 })
 
 app.use('/', router);
