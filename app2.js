@@ -1,6 +1,6 @@
 var express = require('express');
 var http = require('http');
-var serveStatic = require('serve-static');
+var static = require('serve-static');
 var path = require('path');
 var bodyParser = require('body-parser');
 var app = express();
@@ -8,6 +8,10 @@ var router = express.Router();
 var expressErrorHandler = require('express-error-handler');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
+var fs = require('fs');
+
+// client 에서 ajax 요청시 cors(다중서버접속) 지원
+var cors = require('cors');
 
 //기본 포트를 app 객체에 속성으로 설정
 //process.env 객체에 PORT 속성이 있으면 그걸 사용, 없으면 3000
@@ -29,8 +33,12 @@ app.use(session({
     saveUninitialized:true,
 }));
 
-// static 사용 public 경로 지정
-app.use('/public', serveStatic(path.join(__dirname, 'public')));
+// static 사용 public 경로 지정, + uploads 폴더 오픈
+app.use('/public', static(path.join(__dirname, 'public')));
+app.use('/uploads', static(path.join(__dirname, 'uploads')));
+
+// CORS 지원
+app.use(cors());
 
 // middle-ware
 router.route('/process/product').get(function(req, res) {
@@ -60,16 +68,16 @@ router.route('/process/login').post(function(req, res) {
             name:'소녀시대',
             authorized: true
         }
-        res.writeHead('200', {'Content-Tyhpe':'text/html;charset=utf-8'})     ;
+        res.writeHead('200', {'Content-Type':'text/html;charset=utf-8'});
         res.write('<h1>로그인 성공</h1>');
         res.write('<div><p>Param id : ' + paramId + '</p></div>');
         res.write('<div><p>Param password : ' + paramPassword + '</p></div>');
-        res.write("<div><p><a href='/process/product.html'>상품페이지로 이동하기</a></p></div>");
+        res.write("<div><p><a href='/process/product'>상품페이지로 이동하기</a></p></div>");
         res.end();
     }
 })
 
-router.route('process/logout').get(function(req, res){
+router.route('/process/logout').get(function(req, res){
     console.log('/process/logout 호출');
 
     if(req.session.user) {
