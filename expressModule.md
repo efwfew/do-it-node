@@ -45,3 +45,17 @@ res.sendStatus(403)
 | body         | 클라이언트에서 post 방식으로 전송한 요청 파라미터를 확인 ex) req.body.name |
 | header(name) | 헤더를 확인                                                                |
 
+## url 에서 parameter 받기
+
+```
+router.route('process/login/:name').post(function(req, res) {
+    ~~~
+})
+```
+
+/process/login/ 뒤에 오는 값을 파라미터로 처리하겠다는 의미 -> req.params 안에 들어감
+
+이를 토큰(token) 이라고 부름
+
+***
+
